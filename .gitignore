@@ -218,3 +218,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# macOS
+.DS_Store
+
+# data: downloaded or generated, never committed
+data/raw/
+data/genes.json
+data/genes.tsv
+data/chrom.sizes
