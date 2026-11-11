@@ -36,3 +36,37 @@ Q4. Hidden characters at line ends: YES — every line ends with \r (Windows, sh
 git clone / status / add / commit / push / log --oneline / rm --cached
 curl -O URL      download a file, keep its name
 cat -e FILE      show hidden characters at line ends
+
+
+
+
+
+
+
+
+
+
+
+## 2026-11-11 — Day 2: chromosome map
+
+### Output
+data/chrom_map.tsv  (25 rows: accession, short name, length; not in Git)
+
+### Made with (run from repo root)
+awk -F'\t' -v OFS='\t' '$2 == "assembled-molecule" {print $7, $1, $9}' data/raw/GCF_049306965.2_GRCz12tu_assembly_report.txt > data/chrom_map.tsv
+
+Checks: wc -l = 25; columns = NC_... / chr1 / length; cat -e shows no ^M
+
+### Why this command is enough
+No grep -v '^#':  comment lines never have "assembled-molecule" in column 2,
+                  so the condition already drops them.
+No tr -d '\r':    \r sits only at the end of the LAST column (col 10).
+                  I print cols 7, 1, 9, so it never reaches my output.
+                  If I ever need the last column, add  tr -d '\r' |  before awk.
+
+### Lesson: never edit raw files
+I ran  perl -pi -e 's/\r$//'  on the raw report. -i rewrites the original file in place,
+so my copy no longer matched a fresh download, and that step was written nowhere.
+Fixed: deleted it and re-downloaded with the curl command from Day 1 (recipe works).
+Rule: clean data on the way (in the pipeline), never at the source.
+Red flag in data/raw: any tool with -i (perl -i, sed -i).
