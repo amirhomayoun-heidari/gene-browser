@@ -70,3 +70,46 @@ so my copy no longer matched a fresh download, and that step was written nowhere
 Fixed: deleted it and re-downloaded with the curl command from Day 1 (recipe works).
 Rule: clean data on the way (in the pipeline), never at the source.
 Red flag in data/raw: any tool with -i (perl -i, sed -i).
+
+
+
+### Data folder now fully ignored
+.gitignore: replaced all data/... lines with one line:  data/
+Everything in data/ is downloaded or generated -> never committed.
+data/sample.gtf = first 5,000 lines of the GTF, for fast testing:
+  head -5000 data/raw/V12_genomic.gtf > data/sample.gtf
+
+### What is in the GTF (command line)
+grep -v '^#' data/raw/V12_genomic.gtf | cut -f3 | sort | uniq -c
+  exon 1,870,821 | CDS 1,306,594 | transcript 152,552
+  start_codon 95,293 | stop_codon 95,211 | gene 53,513
+Only 1.5% of lines are genes. Every gene has "gene" and "gene_biotype" keys.
+GTF: 9 tab-separated columns, 1-based, end included.
+  1 chrom | 3 feature | 4 start | 5 end | 7 strand | 9 attributes (key "value"; ...)
+Column 9 ends with "; " and some keys repeat (db_xref, gene_synonym).
+
+### Python: prep/make_genes.py
+B  read chrom_map.tsv into 2 dicts: long name -> chr, chr -> length
+C  loop over GTF line by line, skip "#", keep column 3 == "gene"
+D  split column 9 on ";" then on first space -> dict of attributes
+E  one dict per gene: chrom, start (-1), end, name, id, biotype, strand
+F  write genes.json, genes.tsv, chrom.sizes
+
+Run:     python3 prep/make_genes.py
+Output:  genes.tsv 53,514 lines (2.9 MB), genes.json (7.0 MB), chrom.sizes 25 lines
+Checks:  python count = awk count (72 on sample, 53,513 on full file)
+         first gene start 178308 = GTF 178309 - 1
+
+### Lessons
+- Look at the data before writing code.
+- Check every result with a second, independent method.
+- Indentation in Python decides which block a line belongs to.
+  A misplaced print gave no error, it just ran 72 times.
+- Test on a small sample first, run on the full file last.
+- Share code with  cat FILE  in the terminal; copying from the editor lost indentation.
+
+### Open question
+Why is genes.json 2.4x bigger than genes.tsv with the same data?
+
+### Next
+Phase 1, Step 2: first HTML page with a hand-drawn SVG rect, opened via a local server.
