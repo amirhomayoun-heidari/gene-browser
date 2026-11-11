@@ -223,8 +223,4 @@ __marimo__/
 .DS_Store
 
 # data: downloaded or generated, never committed
-data/raw/
-data/genes.json
-data/genes.tsv
-data/chrom.sizes
-data/chrom_map.tsv
+data/
