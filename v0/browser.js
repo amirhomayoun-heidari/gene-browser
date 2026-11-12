@@ -37,16 +37,40 @@ function draw() {
     rect.setAttribute("y", g.strand === "+" ? 40 : 65);
     rect.setAttribute("height", 15);
     rect.setAttribute("fill", g.biotype === "protein_coding" ? "steelblue" : "darkorange");
+
+    rect.addEventListener("mouseover", () => {
+      document.getElementById("info").textContent =
+        `${g.name}  |  ${g.id}  |  ${g.chrom}:${(g.start + 1).toLocaleString()}-${g.end.toLocaleString()}  |  strand ${g.strand}  |  ${g.biotype}`;
+    });
+
     svg.appendChild(rect);
   }
 
-  document.getElementById("region").textContent = `${chrom}: ${visible.length} genes`;
+  document.getElementById("region").textContent =
+    `${chrom}:${Math.round(viewStart + 1).toLocaleString()}-${Math.round(viewEnd).toLocaleString()}  (${visible.length} genes)`;
 }
 
 function showChrom(name) {
   chrom = name;
   viewStart = 0;
   viewEnd = chromSizes[name];
+  draw();
+}
+
+function zoom(factor) {
+  const center = (viewStart + viewEnd) / 2;
+  let half = (viewEnd - viewStart) * factor / 2;
+  half = Math.max(half, 50);
+  viewStart = Math.max(0, center - half);
+  viewEnd = Math.min(chromSizes[chrom], center + half);
+  draw();
+}
+
+function pan(fraction) {
+  const width = viewEnd - viewStart;
+  const shift = width * fraction;
+  viewStart = Math.min(Math.max(0, viewStart + shift), chromSizes[chrom] - width);
+  viewEnd = viewStart + width;
   draw();
 }
 
@@ -69,6 +93,11 @@ async function main() {
     select.appendChild(option);
   }
   select.addEventListener("change", () => showChrom(select.value));
+
+  document.getElementById("zoomIn").addEventListener("click", () => zoom(0.5));
+  document.getElementById("zoomOut").addEventListener("click", () => zoom(2));
+  document.getElementById("left").addEventListener("click", () => pan(-0.5));
+  document.getElementById("right").addEventListener("click", () => pan(0.5));
 
   showChrom(select.value);
 }
