@@ -1,6 +1,9 @@
 const WIDTH = 1000;
 const SVG_NS = "http://www.w3.org/2000/svg";
 
+let genes = [];
+let chromSizes = {};
+let chrom = "";
 let viewStart = 0;
 let viewEnd = 0;
 
@@ -8,20 +11,21 @@ function toPixel(pos) {
   return (pos - viewStart) / (viewEnd - viewStart) * WIDTH;
 }
 
-async function main() {
-  const response = await fetch("../data/genes.json");
-  const genes = await response.json();
+function draw() {
+  const svg = document.getElementById("track");
+  svg.innerHTML = "";
 
-  const chrom = "chr1";
-  viewStart = 0;
-  viewEnd = 63108402;
+  const line = document.createElementNS(SVG_NS, "line");
+  line.setAttribute("x1", 0);
+  line.setAttribute("y1", 60);
+  line.setAttribute("x2", WIDTH);
+  line.setAttribute("y2", 60);
+  line.setAttribute("stroke", "gray");
+  svg.appendChild(line);
 
   const visible = genes.filter(g =>
     g.chrom === chrom && g.end > viewStart && g.start < viewEnd
   );
-  console.log("genes on", chrom, ":", visible.length);
-
-  const svg = document.getElementById("track");
 
   for (const g of visible) {
     const x1 = toPixel(g.start);
@@ -35,6 +39,38 @@ async function main() {
     rect.setAttribute("fill", g.biotype === "protein_coding" ? "steelblue" : "darkorange");
     svg.appendChild(rect);
   }
+
+  document.getElementById("region").textContent = `${chrom}: ${visible.length} genes`;
+}
+
+function showChrom(name) {
+  chrom = name;
+  viewStart = 0;
+  viewEnd = chromSizes[name];
+  draw();
+}
+
+async function main() {
+  const response = await fetch("../data/genes.json");
+  genes = await response.json();
+
+  const sizesResponse = await fetch("../data/chrom.sizes");
+  const sizesText = await sizesResponse.text();
+  for (const row of sizesText.trim().split("\n")) {
+    const [name, size] = row.split("\t");
+    chromSizes[name] = Number(size);
+  }
+
+  const select = document.getElementById("chromSelect");
+  for (const name of Object.keys(chromSizes)) {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    select.appendChild(option);
+  }
+  select.addEventListener("change", () => showChrom(select.value));
+
+  showChrom(select.value);
 }
 
 main();
