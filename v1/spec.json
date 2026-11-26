@@ -14,12 +14,36 @@
     }
   },
 
-  "mark": { "type": "rect", "minWidth": 1 },
-
   "encoding": {
     "x": { "chrom": "chrom", "pos": "start", "type": "locus" },
     "x2": { "chrom": "chrom", "pos": "end" },
-    "y": { "field": "strand", "type": "nominal" },
-    "color": { "field": "biotype", "type": "nominal" }
-  }
+    "y": {
+      "field": "strand",
+      "type": "nominal",
+      "scale": { "domain": ["+", "-"], "padding": 0.3 }
+    }
+  },
+
+  "layer": [
+    {
+      "mark": { "type": "rect", "minWidth": 1 },
+      "encoding": {
+        "color": {
+          "field": "group",
+          "type": "nominal",
+          "scale": {
+            "domain": ["protein_coding", "lncRNA", "tRNA", "rRNA", "small_RNA", "pseudogene", "other"],
+            "range": ["#4c78a8", "#f58518", "#54a24b", "#e45756", "#b279a2", "#9d755d", "#bab0ac"]
+          }
+        }
+      }
+    },
+    {
+      "mark": { "type": "text", "align": "center", "baseline": "middle", "paddingX": 4, "tooltip": null },
+      "encoding": {
+        "text": { "field": "name" },
+        "color": { "value": "white" }
+      }
+    }
+  ]
 }
