@@ -1,0 +1,25 @@
+{
+  "genomes": {
+    "GRCz12tu": { "url": "../data/chrom.sizes" }
+  },
+  "assembly": "GRCz12tu",
+
+  "height": 120,
+
+  "data": {
+    "url": "../data/genes.tsv",
+    "format": {
+      "type": "tsv",
+      "parse": { "start": "integer", "end": "integer" }
+    }
+  },
+
+  "mark": { "type": "rect", "minWidth": 1 },
+
+  "encoding": {
+    "x": { "chrom": "chrom", "pos": "start", "type": "locus" },
+    "x2": { "chrom": "chrom", "pos": "end" },
+    "y": { "field": "strand", "type": "nominal" },
+    "color": { "field": "biotype", "type": "nominal" }
+  }
+}
